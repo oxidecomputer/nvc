@@ -26,6 +26,10 @@
 #include <windows.h>
 #endif
 
+#if defined __illumos__
+#include <ucontext.h>
+#endif
+
 #if GCC_VERSION > 40600
 #define STATIC_ASSERT(x) _Static_assert((x), "Static assertion failed");
 #else
@@ -180,6 +184,26 @@ void fill_cpu_state(struct cpu_state *cpu, ucontext_t *uc)
    cpu->regs[13] = uc->uc_mcontext->__ss.__r13;
    cpu->regs[14] = uc->uc_mcontext->__ss.__r14;
    cpu->regs[15] = uc->uc_mcontext->__ss.__r15;
+#elif defined __illumos__ && defined __x86_64__
+   cpu->pc = uc->uc_mcontext.gregs[REG_RIP];
+   cpu->sp = uc->uc_mcontext.gregs[REG_RSP];
+
+   cpu->regs[0]  = uc->uc_mcontext.gregs[REG_RAX];
+   cpu->regs[1]  = uc->uc_mcontext.gregs[REG_RCX];
+   cpu->regs[2]  = uc->uc_mcontext.gregs[REG_RDX];
+   cpu->regs[3]  = uc->uc_mcontext.gregs[REG_RBX];
+   cpu->regs[4]  = uc->uc_mcontext.gregs[REG_RSP];
+   cpu->regs[5]  = uc->uc_mcontext.gregs[REG_RBP];
+   cpu->regs[6]  = uc->uc_mcontext.gregs[REG_RSI];
+   cpu->regs[7]  = uc->uc_mcontext.gregs[REG_RDI];
+   cpu->regs[8]  = uc->uc_mcontext.gregs[REG_R8];
+   cpu->regs[9]  = uc->uc_mcontext.gregs[REG_R9];
+   cpu->regs[10] = uc->uc_mcontext.gregs[REG_R10];
+   cpu->regs[11] = uc->uc_mcontext.gregs[REG_R11];
+   cpu->regs[12] = uc->uc_mcontext.gregs[REG_R12];
+   cpu->regs[13] = uc->uc_mcontext.gregs[REG_R13];
+   cpu->regs[14] = uc->uc_mcontext.gregs[REG_R14];
+   cpu->regs[15] = uc->uc_mcontext.gregs[REG_R15];
 #else
 #error Please port fill_cpu_state to this OS/CPU combination
 #endif

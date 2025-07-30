@@ -78,6 +78,10 @@ AC_DEFUN([AX_LLVM_C], [
     LLVM_CFLAGS=`$ac_llvm_config --cflags`
     LLVM_CXXFLAGS=`$ac_llvm_config --cxxflags`
     LLVM_LDFLAGS="$($ac_llvm_config --ldflags | sed 's|\\|\\\\|g')"
+    case $host_os in
+    solaris*)
+      LLVM_LDFLAGS="$LLVM_LDFLAGS -Wl,-rpath,$($ac_llvm_config --libdir)"
+    esac
     LLVM_SYSLIBS="$($ac_llvm_config --system-libs)"
     LLVM_LIBS="$($ac_llvm_config --libs $1) $LLVM_SYSLIBS"
     LLVM_CONFIG_BINDIR="$($ac_llvm_config $ac_llvm_config_flags --bindir | sed 's|\\|\\\\|g')"

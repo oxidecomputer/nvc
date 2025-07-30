@@ -325,6 +325,9 @@ void _std_env_gmtime_trec(const time_record_t *tr, time_record_t *result)
       time += (tz.Bias + tz.DaylightBias) * 60;
       break;
    }
+#elif defined(__illumos__)
+   tzset();
+   time -= -timezone;
 #else
    // Call localtime to get GMT offset
    localtime_r(&time, &tm);

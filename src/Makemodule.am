@@ -70,7 +70,6 @@ bin_nvc_LDADD = \
 	lib/libfst.a \
 	lib/libfastlz.a \
 	lib/libcpustate.a \
-	lib/libgnulib.a \
 	lib/libsha1.a \
 	$(zlib_LIBS) \
 	$(libdw_LIBS) \
@@ -81,6 +80,10 @@ bin_nvc_LDADD = \
 	$(jansson_LIBS) \
 	$(LLVM_LIBS) \
 	$(TCL_LIBS)
+
+if NEED_GNULIB
+bin_nvc_LDADD += lib/libgnulib.a
+endif
 
 bin_nvc_LDFLAGS = $(LDFLAGS) $(AM_LDFLAGS) $(EXPORT_LDFLAGS)
 

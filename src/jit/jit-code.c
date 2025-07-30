@@ -41,6 +41,9 @@
 #include <mach-o/stab.h>
 #include <mach-o/arm64/reloc.h>
 #include <mach-o/x86_64/reloc.h>
+#elif defined __illumos__
+#include <sys/elf.h>
+#include <sys/elf_amd64.h>
 #else
 #include <elf.h>
 #endif
@@ -1340,6 +1343,7 @@ static void code_load_elf(code_blob_t *blob, const void *data, size_t size)
                *(uint32_t *)patch = pcrel;
             }
             break;
+#ifndef __illumos__
          case R_AARCH64_CALL26:
             {
                void *veneer = code_emit_trampoline(blob, ptr);
@@ -1367,6 +1371,7 @@ static void code_load_elf(code_blob_t *blob, const void *data, size_t size)
             *(uint32_t *)patch |=
                ((((uintptr_t)ptr + r->r_addend) >> 48) & 0xffff) << 5;
             break;
+#endif //__illumos__
          default:
             blob->span->size = blob->wptr - blob->span->base;
             code_disassemble(blob->span, (uintptr_t)patch, NULL);

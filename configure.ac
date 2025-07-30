@@ -160,6 +160,17 @@ case $host_os in
     ;;
 esac
 
+case $host_os in
+  solaris*)
+    need_gnulib=no
+    ;;
+  *)
+    need_gnulib=yes
+    ;;
+esac
+
+AM_CONDITIONAL([NEED_GNULIB], [test "x$need_gnulib" = "xyes"])
+
 AM_CONDITIONAL([ENABLE_WIX], [test x$CANDLE = xyes])
 
 AC_PATH_PROG([sh_path], ["sh"], ["/bin/sh"])
