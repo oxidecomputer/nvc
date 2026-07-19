@@ -4740,6 +4740,19 @@ static c_designUnit *build_designUnit(tree_t t)
          return &(mod->designUnit);
       }
 
+   case T_PACK_INST:
+      {
+         // A generic package instantiation carries the same ident and
+         // (generic-resolved) declarations as a package, so drive it
+         // through the package-declaration path.
+         c_packDecl *pack = new_object(sizeof(c_packDecl), vhpiPackDeclK);
+         init_packDecl(pack, t);
+
+         pack->designUnit.region.decls.fn = vhpi_lazy_decls;
+
+         return &(pack->designUnit);
+      }
+
    default:
       fatal_trace("unsupported tree kind %s in build_designUnit",
                   tree_kind_str(tree_kind(t)));
