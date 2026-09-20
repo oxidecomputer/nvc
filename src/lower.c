@@ -2970,10 +2970,41 @@ static vcode_reg_t lower_var_ref(lower_unit_t *lu, tree_t decl, expr_ctx_t ctx)
       return emit_load(var);
 }
 
+static int lower_search_signal_obj(tree_t decl, lower_unit_t *lu, int *hops)
+{
+   // A signal name in the expression of an inertial actual is resolved in
+   // the region containing the instantiation.  Skip the scope of the
+   // instantiated block so that a port of an entity which instantiates
+   // itself does not capture the reference: see
+   // lower_inertial_actual_process.  Only signals are hidden as the type
+   // of the formal may depend on the generics of that block.
+   if (lu->hide_parent && lu->parent != NULL) {
+      const void *ptr = hash_get(lu->objects, decl);
+      const int here = (uintptr_t)ptr - 1;
+      if (here != VCODE_INVALID_REG) {
+         *hops = 0;
+         return here;
+      }
+
+      int outer_hops = 0;
+      const int obj =
+         lower_search_vcode_obj(decl, lu->parent->parent, &outer_hops);
+      if (obj != VCODE_INVALID_REG) {
+         *hops = outer_hops + 2;
+         return obj;
+      }
+
+      *hops = 0;
+      return VCODE_INVALID_REG;
+   }
+
+   return lower_search_vcode_obj(decl, lu, hops);
+}
+
 static vcode_reg_t lower_signal_ref(lower_unit_t *lu, tree_t decl)
 {
    int hops = 0;
-   vcode_var_t var = lower_search_vcode_obj(decl, lu, &hops);
+   vcode_var_t var = lower_search_signal_obj(decl, lu, &hops);
 
    vcode_reg_t ptr_reg;
    if (var == VCODE_INVALID_VAR) {
@@ -3008,7 +3039,7 @@ static vcode_reg_t lower_signal_ref(lower_unit_t *lu, tree_t decl)
 static vcode_reg_t lower_port_ref(lower_unit_t *lu, tree_t decl)
 {
    int hops = 0;
-   vcode_var_t var = lower_search_vcode_obj(decl, lu, &hops);
+   vcode_var_t var = lower_search_signal_obj(decl, lu, &hops);
    if (var == VCODE_INVALID_VAR) {
       vcode_dump();
       fatal_trace("missing variable for port %pI", tree_ident(decl));
@@ -11460,6 +11491,12 @@ static void lower_inertial_actual_process(lower_unit_t *lu, object_t *obj)
    default:
       should_not_reach_here();
    }
+
+   // The formal is a port of the instantiated block but the expression is
+   // resolved in the enclosing region.  These are distinct signals even
+   // when they denote the same declaration, which happens if an entity
+   // instantiates itself.
+   lu->hide_parent = true;
 
    type_t port_type = tree_type(target), expr_type = tree_type(expr);
 

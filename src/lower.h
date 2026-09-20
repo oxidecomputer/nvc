@@ -49,6 +49,7 @@ typedef struct _lower_unit {
    cover_data_t    *cover;
    cover_obj_t      cscope;
    bool             finished;
+   bool             hide_parent;
    lower_mode_t     mode;
    unsigned         deferred;
 } lower_unit_t;
