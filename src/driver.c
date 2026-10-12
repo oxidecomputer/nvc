@@ -140,9 +140,12 @@ static void driver_proc_cb(tree_t t, void *ctx)
 
    case T_PCALL:
    case T_PROT_PCALL:
+   case T_FCALL:
+   case T_PROT_FCALL:
       // LRM 08 section 4.2.2.3: a process statement contains a driver
       // for each actual signal associated with a formal signal
-      // parameter of mode out or inout in a subprogram call.
+      // parameter of mode out or inout in a subprogram call.  Since
+      // VHDL-2019 this includes calls to impure functions.
       {
          tree_t decl = tree_ref(t);
          const int nports = tree_ports(decl);
